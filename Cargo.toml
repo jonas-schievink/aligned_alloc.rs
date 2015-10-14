@@ -2,6 +2,9 @@
 name = "aligned_alloc"
 version = "0.1.0"
 authors = ["Jonas Schievink <jonas@schievink.net>"]
+license = "Unlicense"
+repository = "https://github.com/jonas-schievink/aligned_alloc.rs"
+documentation = "https://github.com/jonas-schievink/aligned_alloc.rs#api"
 description = """
 Provides cross-platform primitives for aligned memory allocation
 """
