@@ -1,8 +1,8 @@
 # Aligned Allocations for Rust
 
-| Linux / OS X Build |
-| ------------------ |
-| [![Build Status](https://travis-ci.org/jonas-schievink/aligned_alloc.rs.svg?branch=master)](https://travis-ci.org/jonas-schievink/aligned_alloc.rs) |
+| Linux / OS X | Windows |
+| :----------: | :-----: |
+| [![Build Status](https://travis-ci.org/jonas-schievink/aligned_alloc.rs.svg?branch=master)](https://travis-ci.org/jonas-schievink/aligned_alloc.rs) | [![Build status](https://ci.appveyor.com/api/projects/status/87oi2nolh91715px/branch/master?svg=true)](https://ci.appveyor.com/project/jonas-schievink/aligned-alloc-rs/branch/master) |
 
 This crate provides cross-platform primitives for requesting specifically
 aligned allocations. It is **not** meant to be used as a general allocator API
@@ -11,6 +11,14 @@ specific alignment requirement.
 
 For example, certain arena allocators can find the arena in which an object was
 allocated by masking the address bits if the arena is aligned to its size.
+
+On Unix, this crate makes use of the `posix_memalign` function. On Windows, it's
+a little more complicated: We use `VirtualAlloc` to reserve a chunk of address
+space large enough for the allocation plus alignment (no memory is actually
+allocated), then calculate an aligned address inside this reserved space, undo
+the reservation with `VirtualFree` (the extra bit of reserved memory for the
+alignment won't get wasted), and `VirtualAlloc` again, this time passing the aligned pointer and
+actually allocating the memory instead of just reserving address space.
 
 # Usage
 
