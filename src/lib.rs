@@ -53,11 +53,7 @@ mod imp {
                 }
                 panic!("EINVAL: invalid alignment: {}", align);
             }
-            ENOMEM => {
-                // FIXME: Maybe handle this better
-                panic!("ENOMEM: ran out of memory when attempting aligned allocation of {} bytes \
-                    (aligned to {} bytes)", size, align)
-            }
+            ENOMEM => return ptr::null_mut(),
             _ => unreachable!(),
         }
     }
@@ -95,9 +91,6 @@ mod imp {
             }
             let ptr = VirtualAlloc(aligned_ptr as LPVOID, size as SIZE_T, MEM_COMMIT | MEM_RESERVE,
                 PAGE_READWRITE);
-            if ptr.is_null() {
-                panic!("WINAPI error {} while allocating memory", GetLastError());
-            }
             ptr as *mut ()
         }
     }
