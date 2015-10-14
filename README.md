@@ -1,7 +1,7 @@
 # Aligned Allocations for Rust
 
-| Linux Build |
-| ----------- |
+| Linux / OS X Build |
+| ------------------ |
 | [![Build Status](https://travis-ci.org/jonas-schievink/aligned_alloc.rs.svg?branch=master)](https://travis-ci.org/jonas-schievink/aligned_alloc.rs) |
 
 This crate provides cross-platform primitives for requesting specifically
