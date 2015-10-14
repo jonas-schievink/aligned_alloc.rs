@@ -6,6 +6,10 @@ extern crate kernel32;
 ///
 /// The returned pointer must be deallocated by using `aligned_free`.
 ///
+/// Note: This function is meant to be used for infrequent large allocations (as `malloc` already
+/// guarantees suitable alignment for all native datatypes) and might be quite slow when used
+/// heavily.
+///
 /// # Parameters
 ///
 /// * `size`: The size of the allocation in bytes.
@@ -58,6 +62,7 @@ mod imp {
         }
     }
 
+    #[inline]
     pub unsafe fn aligned_free(ptr: *mut ()) {
         free(ptr as *mut c_void)
     }
@@ -65,16 +70,43 @@ mod imp {
 
 #[cfg(windows)]
 mod imp {
-    use kernel32::VirtualAlloc;
+    use kernel32::{GetLastError, VirtualAlloc, VirtualFree};
+    use winapi::{MEM_COMMIT, MEM_RESERVE, MEM_RELEASE, PAGE_NOACCESS, PAGE_READWRITE, SIZE_T,
+        LPVOID};
 
-    use std::{mem, ptr};
+    use std::ptr;
 
     pub fn aligned_alloc(size: usize, align: usize) -> *mut () {
-        panic!()
+        unsafe {
+            // Step 1: Reserve `size+align-1` Bytes of address space to find a suitable address
+            let ptr = VirtualAlloc(ptr::null_mut(), (size + align - 1) as SIZE_T, MEM_RESERVE,
+                PAGE_NOACCESS);
+            if ptr.is_null() {
+                panic!("WINAPI error {} while reserving memory", GetLastError());
+            }
+
+            // Step 2: Calculate an aligned address within the reserved range
+            let aligned_ptr = (ptr as usize + align - 1) & !(align - 1);
+
+            // Step 3: Actually allocate (commit) the memory
+            let res = VirtualFree(ptr as LPVOID, 0, MEM_RELEASE);
+            if res == 0 {
+                panic!("WINAPI error {} while freeing reserved memory", GetLastError());
+            }
+            let ptr = VirtualAlloc(aligned_ptr as LPVOID, size as SIZE_T, MEM_COMMIT | MEM_RESERVE,
+                PAGE_READWRITE);
+            if ptr.is_null() {
+                panic!("WINAPI error {} while allocating memory", GetLastError());
+            }
+            ptr as *mut ()
+        }
     }
 
     pub unsafe fn aligned_free(ptr: *mut ()) {
-        panic!()
+        let res = VirtualFree(ptr as LPVOID, 0, MEM_RELEASE);
+        if res == 0 {
+            panic!("WINAPI error {} while releasing memory", GetLastError());
+        }
     }
 }
 
