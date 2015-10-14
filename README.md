@@ -1,5 +1,9 @@
 # Aligned Allocations for Rust
 
+| Linux Build |
+| ----------- |
+| [![Build Status](https://travis-ci.org/jonas-schievink/aligned_alloc.rs.svg?branch=master)](https://travis-ci.org/jonas-schievink/aligned_alloc.rs) |
+
 This crate provides cross-platform primitives for requesting specifically
 aligned allocations. It is **not** meant to be used as a general allocator API
 like `alloc::heap`, but can be used for infrequent large allocations that have a
