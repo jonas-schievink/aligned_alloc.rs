@@ -1,4 +1,4 @@
-# Aligned Allocations for Rust
+# Aligned Allocations for Rust [![](http://meritbadge.herokuapp.com/aligned_alloc)](https://crates.io/crates/aligned_alloc)
 
 | Linux / OS X | Windows |
 | :----------: | :-----: |
