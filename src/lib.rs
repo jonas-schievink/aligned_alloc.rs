@@ -79,9 +79,7 @@ mod imp {
             // Step 1: Reserve `size+align-1` Bytes of address space to find a suitable address
             let ptr = VirtualAlloc(ptr::null_mut(), (size + align - 1) as SIZE_T, MEM_RESERVE,
                 PAGE_NOACCESS);
-            if ptr.is_null() {
-                panic!("WINAPI error {} while reserving memory", GetLastError());
-            }
+            if ptr.is_null() { return ptr::null_mut() }
 
             // Step 2: Calculate an aligned address within the reserved range
             // (this works because `align` must be a power of two)
