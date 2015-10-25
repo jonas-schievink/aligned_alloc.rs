@@ -73,6 +73,8 @@ mod imp {
     use std::ptr;
 
     pub fn aligned_alloc(size: usize, align: usize) -> *mut () {
+        assert!(align.is_power_of_two(), "align must be a power of two");
+
         unsafe {
             // Step 1: Reserve `size+align-1` Bytes of address space to find a suitable address
             let ptr = VirtualAlloc(ptr::null_mut(), (size + align - 1) as SIZE_T, MEM_RESERVE,
@@ -82,6 +84,7 @@ mod imp {
             }
 
             // Step 2: Calculate an aligned address within the reserved range
+            // (this works because `align` must be a power of two)
             let aligned_ptr = (ptr as usize + align - 1) & !(align - 1);
 
             // Step 3: Actually allocate (commit) the memory
