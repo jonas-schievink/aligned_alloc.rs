@@ -4,6 +4,8 @@ branches:
     - gh-pages
 matrix:
   fast_finish: true
+  allow_failures:
+    - RUST_VERSION: nightly
 environment:
   RUST_INSTALL_DIR: C:\Rust
   matrix:
