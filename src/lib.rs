@@ -66,16 +66,38 @@ mod imp {
 
 #[cfg(windows)]
 mod imp {
-    use kernel32::{GetLastError, VirtualAlloc, VirtualFree};
+    use kernel32::{GetLastError, GetSystemInfo, VirtualAlloc, VirtualFree};
     use winapi::{MEM_COMMIT, MEM_RESERVE, MEM_RELEASE, PAGE_NOACCESS, PAGE_READWRITE, SIZE_T,
-        LPVOID};
+        LPVOID, DWORD, SYSTEM_INFO};
 
+    use std::mem;
     use std::ptr;
+
+    static mut PAGE_SIZE: DWORD = 0;
+
+    #[cold]
+    fn get_page_size() {
+        let mut info: SYSTEM_INFO = unsafe { mem::uninitialized() };
+        unsafe { GetSystemInfo(&mut info); }
+
+        unsafe {
+            PAGE_SIZE = info.dwPageSize;
+        }
+    }
 
     pub fn aligned_alloc(size: usize, align: usize) -> *mut () {
         assert!(align.is_power_of_two(), "align must be a power of two");
 
+        if unsafe { PAGE_SIZE } == 0 { get_page_size() }
+
         unsafe {
+            if align <= PAGE_SIZE as usize {
+                // Page alignment is guaranteed by `VirtualAlloc`
+                let ptr = VirtualAlloc(ptr::null_mut(), size as SIZE_T, MEM_COMMIT | MEM_RESERVE,
+                    PAGE_READWRITE);
+                return ptr as *mut ()
+            }
+
             // Step 1: Reserve `size+align-1` Bytes of address space to find a suitable address
             let ptr = VirtualAlloc(ptr::null_mut(), (size + align - 1) as SIZE_T, MEM_RESERVE,
                 PAGE_NOACCESS);
@@ -109,7 +131,15 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test() {
+    fn test_low_align() {
+        let ptr = aligned_alloc(1, 128);
+        assert!(!ptr.is_null());
+        assert!(ptr as usize % 128 == 0);
+        unsafe { aligned_free(ptr) }
+    }
+
+    #[test]
+    fn test_high_align() {
         let ptr = aligned_alloc(1, 1024 * 1024);
         assert!(!ptr.is_null());
         assert!(ptr as usize % (1024 * 1024) == 0);
