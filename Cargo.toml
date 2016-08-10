@@ -1,7 +1,7 @@
 [package]
 name = "aligned_alloc"
 version = "0.1.2"
-authors = ["Jonas Schievink <jonas@schievink.net>"]
+authors = ["Jonas Schievink <jonasschievink@gmail.com>"]
 license = "Apache-2.0/MIT"
 repository = "https://github.com/jonas-schievink/aligned_alloc.rs"
 documentation = "https://github.com/jonas-schievink/aligned_alloc.rs#api"
