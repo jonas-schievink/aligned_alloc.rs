@@ -6,6 +6,7 @@ license = "Apache-2.0/MIT"
 repository = "https://github.com/jonas-schievink/aligned_alloc.rs"
 documentation = "https://github.com/jonas-schievink/aligned_alloc.rs#api"
 keywords = ["alloc", "allocator", "align", "alignment", "aligned"]
+categories = ["memory-management"]
 description = """
 Provides cross-platform primitives for aligned memory allocation
 """
