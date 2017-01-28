@@ -131,7 +131,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_low_align() {
+    fn small_low_align() {
         let ptr = aligned_alloc(1, 128);
         assert!(!ptr.is_null());
         assert!(ptr as usize % 128 == 0);
@@ -139,10 +139,32 @@ mod tests {
     }
 
     #[test]
-    fn test_high_align() {
+    fn small_high_align() {
         let ptr = aligned_alloc(1, 1024 * 1024);
         assert!(!ptr.is_null());
         assert!(ptr as usize % (1024 * 1024) == 0);
         unsafe { aligned_free(ptr) }
+    }
+
+    #[test]
+    fn large_high_align() {
+        // allocate 1 MiB aligned to 1 MiB
+        let ptr = aligned_alloc(1024 * 1024, 1024 * 1024);
+        assert!(!ptr.is_null());
+        assert!(ptr as usize % (1024 * 1024) == 0);
+        unsafe { aligned_free(ptr) }
+    }
+
+    #[test]
+    #[should_panic]
+    fn align_less_than_sizeof_usize() {
+        // alignment of less than sizeof(usize)
+        aligned_alloc(1, 3);
+    }
+
+    #[test]
+    #[should_panic]
+    fn align_not_power_of_two() {
+        aligned_alloc(1, 27);
     }
 }
