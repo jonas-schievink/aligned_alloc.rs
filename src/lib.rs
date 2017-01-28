@@ -167,4 +167,10 @@ mod tests {
     fn align_not_power_of_two() {
         aligned_alloc(1, 27);
     }
+
+    #[test]
+    #[should_panic]
+    fn align_zero() {
+        aligned_alloc(1, 0);
+    }
 }
