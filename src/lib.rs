@@ -1,6 +1,4 @@
-extern crate libc;
-extern crate winapi;
-extern crate kernel32;
+#![cfg(any(unix, windows))]
 
 /// Allocates `size` Bytes aligned to `align` Bytes. Returns a null pointer on allocation failure.
 ///
@@ -30,7 +28,9 @@ pub unsafe fn aligned_free(ptr: *mut ()) {
 
 #[cfg(unix)]
 mod imp {
-    use libc::{c_void, c_int, size_t, EINVAL, ENOMEM, free};
+    extern crate libc;
+
+    use self::libc::{c_void, c_int, size_t, EINVAL, ENOMEM, free};
 
     use std::{mem, ptr};
 
@@ -66,8 +66,11 @@ mod imp {
 
 #[cfg(windows)]
 mod imp {
-    use kernel32::{GetLastError, GetSystemInfo, VirtualAlloc, VirtualFree};
-    use winapi::{MEM_COMMIT, MEM_RESERVE, MEM_RELEASE, PAGE_NOACCESS, PAGE_READWRITE, SIZE_T,
+    extern crate winapi;
+    extern crate kernel32;
+
+    use self::kernel32::{GetLastError, GetSystemInfo, VirtualAlloc, VirtualFree};
+    use self::winapi::{MEM_COMMIT, MEM_RESERVE, MEM_RELEASE, PAGE_NOACCESS, PAGE_READWRITE, SIZE_T,
         LPVOID, DWORD, SYSTEM_INFO};
 
     use std::mem;
