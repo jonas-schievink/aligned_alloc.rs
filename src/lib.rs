@@ -71,31 +71,32 @@ mod imp {
 
     use self::kernel32::{GetLastError, GetSystemInfo, VirtualAlloc, VirtualFree};
     use self::winapi::{MEM_COMMIT, MEM_RESERVE, MEM_RELEASE, PAGE_NOACCESS, PAGE_READWRITE, SIZE_T,
-        LPVOID, DWORD, SYSTEM_INFO};
+        LPVOID, SYSTEM_INFO};
 
     use std::mem;
     use std::ptr;
+    use std::sync::atomic::{AtomicUsize, Ordering, ATOMIC_USIZE_INIT};
 
-    static mut PAGE_SIZE: DWORD = 0;
+    static PAGE_SIZE: AtomicUsize = ATOMIC_USIZE_INIT;
 
     #[cold]
     fn get_page_size() {
         let mut info: SYSTEM_INFO = unsafe { mem::uninitialized() };
         unsafe { GetSystemInfo(&mut info); }
 
-        unsafe {
-            PAGE_SIZE = info.dwPageSize;
-        }
+        PAGE_SIZE.store(info.dwPageSize as usize, Ordering::SeqCst);
     }
 
     pub fn aligned_alloc(size: usize, align: usize) -> *mut () {
         assert!(align.is_power_of_two(), "align must be a power of two");
         assert!(align >= mem::size_of::<usize>(), "align must be at least as large as a usize");
 
-        if unsafe { PAGE_SIZE } == 0 { get_page_size() }
+        if PAGE_SIZE.load(Ordering::SeqCst) == 0 {
+            get_page_size();
+        }
 
         unsafe {
-            if align <= PAGE_SIZE as usize {
+            if align <= PAGE_SIZE.load(Ordering::SeqCst) {
                 // Page alignment is guaranteed by `VirtualAlloc`
                 let ptr = VirtualAlloc(ptr::null_mut(), size as SIZE_T, MEM_COMMIT | MEM_RESERVE,
                     PAGE_READWRITE);
