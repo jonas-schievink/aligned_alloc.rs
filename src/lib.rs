@@ -90,6 +90,7 @@ mod imp {
 
     pub fn aligned_alloc(size: usize, align: usize) -> *mut () {
         assert!(align.is_power_of_two(), "align must be a power of two");
+        assert!(align >= mem::size_of::<usize>(), "align must be at least as large as a usize");
 
         if unsafe { PAGE_SIZE } == 0 { get_page_size() }
 
@@ -162,7 +163,7 @@ mod tests {
     #[should_panic]
     fn align_less_than_sizeof_usize() {
         // alignment of less than sizeof(usize)
-        aligned_alloc(1, 3);
+        aligned_alloc(1, 2);
     }
 
     #[test]
