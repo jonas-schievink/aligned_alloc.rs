@@ -45,7 +45,8 @@ The returned pointer must be deallocated by using `aligned_free`.
 
 **Note**: This function is meant to be used for infrequent large allocations (as `malloc` already
 guarantees suitable alignment for all native datatypes) and might be quite slow when used
-heavily.
+heavily. Consider using [`Vec::with_capacity`] combined with [`Vec::as_ptr`] and perhaps
+[`mem::forget`] and [`Vec::from_raw_parts`] if you need generic allocation.
 
 ##### Parameters
 
@@ -58,3 +59,8 @@ heavily.
 Deallocates aligned memory that was allocated with `aligned_alloc`. Unsafe because calling this
 with a pointer that was not allocated with `aligned_alloc` (or already released) causes
 undefined behavior.
+
+[`Vec::with_capacity`]: https://doc.rust-lang.org/std/vec/struct.Vec.html#method.with_capacity
+[`Vec::as_ptr`]: https://doc.rust-lang.org/std/vec/struct.Vec.html#method.as_ptr
+[`mem::forget`]: https://doc.rust-lang.org/std/mem/fn.forget.html
+[`Vec::from_raw_parts`]: https://doc.rust-lang.org/std/vec/struct.Vec.html#method.from_raw_parts
